@@ -22,19 +22,22 @@ namespace Web.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IReportExportService _reportExportService;
         private readonly IUserSubscriptionRepository _subscriptionRepository;
+        private readonly IConfiguration _config;
 
         public ReportsController(
             IReportRepository reportRepository,
             ITemplateRepository templateRepository,
             UserManager<User> userManager,
             IReportExportService reportExportService,
-            IUserSubscriptionRepository subscriptionRepository)
+            IUserSubscriptionRepository subscriptionRepository,
+            IConfiguration config)
         {
             _reportRepository = reportRepository;
             _templateRepository = templateRepository;
             _userManager = userManager;
             _reportExportService = reportExportService;
             _subscriptionRepository = subscriptionRepository;
+            _config = config;
         }
 
         [HttpGet]
@@ -88,14 +91,17 @@ namespace Web.Controllers
                 return Unauthorized("User ID could not be determined from token.");
             }
 
-            // Enforce free tier limit
-            var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
-            if (subscription != null && subscription.PlanType == PlanType.Free)
+            // Enforce free tier limit only if the feature is enabled
+            if (_config.GetValue<bool>("Features:EnableSubscriptionChecks"))
             {
-                var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
-                if (userReports >= 3)
+                var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
+                if (subscription != null && subscription.PlanType == PlanType.Free)
                 {
-                    return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                    var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
+                    if (userReports >= 3)
+                    {
+                        return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                    }
                 }
             }
 
@@ -121,14 +127,17 @@ namespace Web.Controllers
                 return Unauthorized("User ID could not be determined from token.");
             }
 
-            // Enforce free tier limit
-            var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
-            if (subscription != null && subscription.PlanType == PlanType.Free)
+            // Enforce free tier limit only if the feature is enabled
+            if (_config.GetValue<bool>("Features:EnableSubscriptionChecks"))
             {
-                var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
-                if (userReports >= 3)
+                var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
+                if (subscription != null && subscription.PlanType == PlanType.Free)
                 {
-                    return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                    var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
+                    if (userReports >= 3)
+                    {
+                        return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                    }
                 }
             }
 

@@ -2,33 +2,15 @@
 
 Welcome to the FIR Report Editor! This is a full-stack web application designed to help users create, manage, and export First Information Report (FIR) documents in both English and Urdu.
 
-## Features
-
-- **User Authentication:** Secure user registration and login.
-- **Subscription Tiers:** Free, Monthly, and Lifetime (Master) account plans.
-- **Rich Text Editor:** A full-featured editor for creating and formatting reports.
-- **Multi-Language Support:** Full support for both English (LTR) and Urdu (RTL).
-- **Report Management:** Create, save, and manage your reports from a user-friendly dashboard.
-- **Template System:** Administrators can create and manage templates for users to start from.
-- **PDF & DOCX Export:** Export your finished reports to popular document formats.
-- **Payment Integration:** Securely upgrade your subscription using Stripe.
-
 ---
 
-## Getting Started: How to Run the Project
+## 🚀 Quick Start: Run Everything with One Command
 
-Follow these steps to get the application running on your local machine.
+This is the easiest way to get the entire application running. All you need is **Docker** installed on your computer.
 
-### 1. Prerequisites (What You Need to Install First)
+### Step 1: Configure Your Keys
 
-Before you begin, you need to have a few tools installed on your computer.
-
-- **.NET 8 SDK:** This is the framework for the backend. You can download it from the official Microsoft website: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Node.js and npm:** This is for running the frontend application. You can download it from the official Node.js website: [https://nodejs.org/](https://nodejs.org/)
-
-### 2. Configure the Application
-
-This is the most important step. You need to provide a few secret keys for the application to work.
+Before you start, you need to provide a few secret keys.
 
 1.  **Find the Configuration File:** Navigate to the `Web` folder and open the `appsettings.json` file.
 2.  **Edit the File:** You will see sections for `Jwt` and `Stripe`. You need to fill in the placeholder values.
@@ -46,52 +28,63 @@ This is the most important step. You need to provide a few secret keys for the a
         "SecretKey": "sk_test_YOUR_SECRET_KEY",           // Get this from your Stripe Dashboard
         "WebhookSecret": "whsec_YOUR_WEBHOOK_SECRET"      // Get this from your Stripe Dashboard's webhook settings
       },
+      "Features": {
+        "EnableSubscriptionChecks": true // Set to false to disable all subscription limits
+      }
       // ... other settings
     }
     ```
 
-    - **`Jwt:Key`**: Replace the placeholder with a long, random, and secret string. This is for securing your application's tokens.
-    - **Stripe Keys**: You will need a [Stripe](https://stripe.com/) account. You can find your **Publishable Key** and **Secret Key** in your Stripe Dashboard under the "Developers" -> "API keys" section. The **Webhook Secret** is generated when you set up a webhook endpoint in Stripe.
+    - **`Jwt:Key`**: Replace the placeholder with a long, random, and secret string.
+    - **Stripe Keys**: You will need a [Stripe](https://stripe.com/) account. You can find your keys in your Stripe Dashboard under "Developers" -> "API keys".
+    - **`EnableSubscriptionChecks`**: Set this to `false` if you want all users to have access to all features without any subscription limits. Set it to `true` to enforce the payment plans.
 
-### 3. Run the Backend (The "Server")
+### Step 2: Run the Application
 
-1.  Open a terminal or command prompt.
-2.  Navigate to the root directory of the project.
-3.  Run the following command:
+1.  Open a terminal or command prompt in the root directory of the project.
+2.  Run the following single command:
+    ```bash
+    docker-compose up --build
+    ```
+3.  Wait for the build process to complete. You will see a lot of text in your terminal.
+4.  Once it's done, open your web browser and go to: **http://localhost**
+
+That's it! The entire application is now running.
+
+---
+
+## 🔧 (For Developers) Manual Local Setup
+
+If you are a developer and prefer not to use Docker, you can run the project manually.
+
+### Prerequisites
+
+-   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+-   [Node.js and npm](https://nodejs.org/)
+
+### 1. Run the Backend
+
+1.  Make sure you have configured your `appsettings.json` file as described in the "Quick Start" section.
+2.  Open a terminal and navigate to the project's root directory.
+3.  Run the backend server:
     ```bash
     dotnet run --project Web
     ```
-4.  This will start the backend server. You should see output in the terminal indicating that it's running. Keep this terminal open.
+4.  Keep this terminal open.
 
-### 4. Run the Frontend (The "Website")
+### 2. Run the Frontend
 
-1.  Open a **new** terminal or command prompt.
+1.  Open a **new** terminal.
 2.  Navigate to the `ClientApp` directory:
     ```bash
     cd ClientApp
     ```
-3.  Install the necessary packages by running:
+3.  Install dependencies:
     ```bash
     npm install
     ```
-4.  Once the installation is complete, start the frontend application:
+4.  Start the frontend server:
     ```bash
     npm run dev
     ```
-5.  You should see a message in the terminal with a local URL, usually `http://localhost:5173`.
-
-### 5. Access the Application
-
--   Open your web browser and navigate to the URL from the previous step (e.g., `http://localhost:5173`).
--   You should now see the FIR Report Editor login page! You can register a new account and start using the application.
-
----
-
-## How to Use the Application
-
-1.  **Register:** Create a new account from the registration page.
-2.  **Login:** Log in with your new credentials.
-3.  **Dashboard:** You will be redirected to the dashboard.
-4.  **Manage Reports:** From here, you can create new reports, edit existing ones, or export them.
-5.  **Upgrade Account:** Navigate to the "My Account" page to upgrade your subscription plan using Stripe.
-6.  **Admin Features:** If you are an administrator, you will see options to manage user templates.
+5.  Open your browser to the URL provided in the terminal (usually `http://localhost:5173`).

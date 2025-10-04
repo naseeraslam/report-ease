@@ -5,6 +5,7 @@ using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace Web.Authorization
 {
@@ -12,15 +13,26 @@ namespace Web.Authorization
     {
         private readonly IUserSubscriptionRepository _subscriptionRepository;
         private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _config;
 
-        public SubscriptionAuthorizationHandler(IUserSubscriptionRepository subscriptionRepository, UserManager<User> userManager)
+        public SubscriptionAuthorizationHandler(
+            IUserSubscriptionRepository subscriptionRepository,
+            UserManager<User> userManager,
+            IConfiguration config)
         {
             _subscriptionRepository = subscriptionRepository;
             _userManager = userManager;
+            _config = config;
         }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, SubscriptionRequirement requirement)
         {
+            if (!_config.GetValue<bool>("Features:EnableSubscriptionChecks"))
+            {
+                context.Succeed(requirement);
+                return;
+            }
+
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {

@@ -71,5 +71,50 @@ namespace Web.Controllers
 
             return Ok(new { message = "User role updated successfully." });
         }
+
+        [HttpPost("update-subscription")]
+        public async Task<IActionResult> UpdateUserSubscription(UpdateUserSubscriptionDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == dto.UserId);
+
+            if (subscription == null)
+            {
+                subscription = new UserSubscription
+                {
+                    UserId = dto.UserId,
+                    PaymentStatus = "Admin Granted"
+                };
+            }
+
+            subscription.PlanType = dto.PlanType;
+            subscription.IsActive = true;
+            subscription.StartDate = DateTime.UtcNow;
+
+            if (dto.PlanType == PlanType.Monthly)
+            {
+                subscription.ExpiryDate = DateTime.UtcNow.AddMonths(1);
+            }
+            else
+            {
+                subscription.ExpiryDate = null; // Free and Lifetime plans do not expire
+            }
+
+            if (subscription.Id == 0) // New subscription
+            {
+                await _subscriptionRepository.AddAsync(subscription);
+            }
+            else // Existing subscription
+            {
+                await _subscriptionRepository.UpdateAsync(subscription);
+            }
+
+            return Ok(new { message = "User subscription updated successfully." });
+        }
     }
 }
