@@ -4,16 +4,16 @@ Welcome to the FIR Report Editor! This is a full-stack web application designed 
 
 ---
 
-## 🚀 Quick Start: Run Everything with One Command
+## 🚀 Easiest Method: Run with Docker
 
-This is the easiest way to get the entire application running. All you need is **Docker** installed on your computer.
+This is the simplest "one-click" way to get the entire application running. All you need is **Docker Desktop** installed on your computer.
 
 ### Step 1: Configure Your Keys
 
 Before you start, you need to provide a few secret keys.
 
 1.  **Find the Configuration File:** Navigate to the `Web` folder and open the `appsettings.json` file.
-2.  **Edit the File:** You will see sections for `Jwt` and `Stripe`. You need to fill in the placeholder values.
+2.  **Edit the File:** Fill in the placeholder values for `Jwt` and `Stripe`.
 
     ```json
     {
@@ -35,56 +35,65 @@ Before you start, you need to provide a few secret keys.
     }
     ```
 
-    - **`Jwt:Key`**: Replace the placeholder with a long, random, and secret string.
-    - **Stripe Keys**: You will need a [Stripe](https://stripe.com/) account. You can find your keys in your Stripe Dashboard under "Developers" -> "API keys".
-    - **`EnableSubscriptionChecks`**: Set this to `false` if you want all users to have access to all features without any subscription limits. Set it to `true` to enforce the payment plans.
-
 ### Step 2: Run the Application
 
-1.  Open a terminal or command prompt in the root directory of the project.
+1.  Open a terminal (like **PowerShell** or **Command Prompt**) in the root directory of the project.
 2.  Run the following single command:
     ```bash
     docker-compose up --build
     ```
-3.  Wait for the build process to complete. You will see a lot of text in your terminal.
+3.  Wait for the build process to complete.
 4.  Once it's done, open your web browser and go to: **http://localhost**
 
 That's it! The entire application is now running.
 
 ---
 
-## 🔧 (For Developers) Manual Local Setup
+## 💻 Manual Setup on a Windows Laptop
 
-If you are a developer and prefer not to use Docker, you can run the project manually.
+If you prefer not to use Docker, you can run the project directly on Windows.
 
-### Prerequisites
+### Step 1: Install the Necessary Tools
 
--   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
--   [Node.js and npm](https://nodejs.org/)
+You need to download and install two things. Just run the installer for each one and follow the on-screen prompts.
 
-### 1. Run the Backend
+1.  **.NET 8 SDK for Windows:**
+    *   Download from the official Microsoft website: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0) (Use the "x64" installer for most Windows laptops).
+2.  **Node.js (LTS) for Windows:**
+    *   Download from the official Node.js website: [https://nodejs.org/](https://nodejs.org/) (The "LTS" version is recommended).
 
-1.  Make sure you have configured your `appsettings.json` file as described in the "Quick Start" section.
-2.  Open a terminal and navigate to the project's root directory.
-3.  Run the backend server:
+### Step 2: Configure Your Keys
+
+This is the same as the Docker setup. Follow the instructions in **Step 1 of the Docker guide** above to edit your `appsettings.json` file with your secret keys.
+
+### Step 3: Run the Backend (The "Server")
+
+1.  Open a terminal application on Windows (you can search for **PowerShell** or **Command Prompt** in the Start Menu).
+2.  In the terminal, navigate to the project's root folder.
+3.  Run the following command to start the backend:
     ```bash
     dotnet run --project Web
     ```
-4.  Keep this terminal open.
+4.  This will start the backend server. You will see log messages in the terminal. **Leave this terminal open and running.**
 
-### 2. Run the Frontend
+### Step 4: Run the Frontend (The "Website")
 
-1.  Open a **new** terminal.
-2.  Navigate to the `ClientApp` directory:
+1.  Open a **second, new** terminal window (leave the first one running).
+2.  In this new terminal, navigate to the `ClientApp` directory inside the project folder:
     ```bash
     cd ClientApp
     ```
-3.  Install dependencies:
+3.  First, install all the necessary website packages by running:
     ```bash
     npm install
     ```
-4.  Start the frontend server:
+4.  After the installation finishes, start the frontend server:
     ```bash
     npm run dev
     ```
-5.  Open your browser to the URL provided in the terminal (usually `http://localhost:5173`).
+5.  The terminal will show you a URL, which is usually `http://localhost:5173`.
+
+### Step 5: Use the Application
+
+-   Open your web browser (like Chrome, Firefox, or Edge) and go to the URL from the previous step (e.g., `http://localhost:5173`).
+-   You should now see the FIR Report Editor login page! You can register a new account and start using the application.
