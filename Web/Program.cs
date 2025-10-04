@@ -6,7 +6,10 @@ using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
+using Web.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,12 +57,27 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
+// Add custom authorization handler
+builder.Services.AddSingleton<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Subscriber", policy =>
+        policy.Requirements.Add(new SubscriptionRequirement(PlanType.Monthly)));
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add the background service
+builder.Services.AddHostedService<Infrastructure.Services.SubscriptionStatusService>();
+
 var app = builder.Build();
+
+// Configure Stripe
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // 2. Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

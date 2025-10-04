@@ -76,6 +76,7 @@ namespace Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Subscriber")]
         public async Task<ActionResult<ReportDto>> CreateReport(CreateUpdateReportDto reportDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -97,6 +98,7 @@ namespace Web.Controllers
         }
 
         [HttpPost("from-template")]
+        [Authorize(Policy = "Subscriber")]
         public async Task<ActionResult<ReportDto>> CreateReportFromTemplate(CreateReportFromTemplateDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -160,6 +162,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("{id}/export/pdf")]
+        [Authorize(Policy = "Subscriber")]
         public async Task<IActionResult> ExportReportAsPdf(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -175,6 +178,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("{id}/export/docx")]
+        [Authorize(Policy = "Subscriber")]
         public async Task<IActionResult> ExportReportAsDocx(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
