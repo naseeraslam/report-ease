@@ -21,17 +21,20 @@ namespace Web.Controllers
         private readonly ITemplateRepository _templateRepository;
         private readonly UserManager<User> _userManager;
         private readonly IReportExportService _reportExportService;
+        private readonly IUserSubscriptionRepository _subscriptionRepository;
 
         public ReportsController(
             IReportRepository reportRepository,
             ITemplateRepository templateRepository,
             UserManager<User> userManager,
-            IReportExportService reportExportService)
+            IReportExportService reportExportService,
+            IUserSubscriptionRepository subscriptionRepository)
         {
             _reportRepository = reportRepository;
             _templateRepository = templateRepository;
             _userManager = userManager;
             _reportExportService = reportExportService;
+            _subscriptionRepository = subscriptionRepository;
         }
 
         [HttpGet]
@@ -85,6 +88,17 @@ namespace Web.Controllers
                 return Unauthorized("User ID could not be determined from token.");
             }
 
+            // Enforce free tier limit
+            var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
+            if (subscription != null && subscription.PlanType == PlanType.Free)
+            {
+                var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
+                if (userReports >= 3)
+                {
+                    return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                }
+            }
+
             var report = new Report
             {
                 Title = reportDto.Title,
@@ -105,6 +119,17 @@ namespace Web.Controllers
             if (userId == null)
             {
                 return Unauthorized("User ID could not be determined from token.");
+            }
+
+            // Enforce free tier limit
+            var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
+            if (subscription != null && subscription.PlanType == PlanType.Free)
+            {
+                var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
+                if (userReports >= 3)
+                {
+                    return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
+                }
             }
 
             var template = await _templateRepository.GetByIdAsync(dto.TemplateId);

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Entities;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +20,18 @@ namespace Web.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _config;
+        private readonly IUserSubscriptionRepository _subscriptionRepository;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration config)
+        public AccountController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IConfiguration config,
+            IUserSubscriptionRepository subscriptionRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
+            _subscriptionRepository = subscriptionRepository;
         }
 
         [HttpPost("register")]
@@ -48,6 +55,18 @@ namespace Web.Controllers
                 // This case should not happen if creation is successful, but for safety:
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user with complete data.");
             }
+
+            // Assign a free subscription by default
+            var freeSubscription = new UserSubscription
+            {
+                UserId = user.Id,
+                PlanType = PlanType.Free,
+                StartDate = DateTime.UtcNow,
+                ExpiryDate = null, // Free plan never expires
+                IsActive = true,
+                PaymentStatus = "N/A"
+            };
+            await _subscriptionRepository.AddAsync(freeSubscription);
 
             return new UserDto
             {
