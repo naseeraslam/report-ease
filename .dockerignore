@@ -1,0 +1,28 @@
+# Ignore all build artifacts
+[Bb]in/
+[Oo]bj/
+
+# Ignore local user settings
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore frontend dependencies (these should be handled by the frontend build process if it were included)
+ClientApp/node_modules
+ClientApp/dist
+
+# Ignore IDE/editor specific files
+.vs/
+.vscode/
+.idea/
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore local database files
+*.db
+*.db-journal
+
+# Ignore temporary verification files
+jules-scratch/
