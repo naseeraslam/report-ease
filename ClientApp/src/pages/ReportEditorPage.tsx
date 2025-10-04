@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Editor } from '@tinymce/tinymce-react';
 import reportService from '../services/reportService';
 import { CreateUpdateReportDto, Language } from '../types/report.types';
 
@@ -79,13 +80,24 @@ const ReportEditorPage: React.FC = () => {
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2">Content</label>
-          <textarea
+          <Editor
+            apiKey="no-api-key" // Replace with your TinyMCE API key
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2 border rounded"
-            rows={15}
-            style={{ direction: language === Language.Urdu ? 'rtl' : 'ltr' }}
-            required
+            onEditorChange={(newContent) => setContent(newContent)}
+            init={{
+              height: 500,
+              menubar: false,
+              plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+              ],
+              toolbar:
+                'undo redo | formatselect | bold italic backcolor | \
+                alignleft aligncenter alignright alignjustify | \
+                bullist numlist outdent indent | removeformat | help',
+              directionality: language === Language.Urdu ? 'rtl' : 'ltr',
+            }}
           />
         </div>
         <div className="flex justify-end">
