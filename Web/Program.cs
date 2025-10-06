@@ -58,7 +58,7 @@ builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionReposito
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
 // Add custom authorization handler
-builder.Services.AddSingleton<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
 
 builder.Services.AddAuthorization(options =>
 {
