@@ -1,18 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import paymentService from '../services/paymentService';
-import authService from '../services/authService';
-import { UserDto } from '../types/auth.types';
 // We would also fetch and display the user's current subscription status here.
 // For now, we'll just focus on the upgrade flow.
 
 const AccountPage: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const user = authService.getCurrentUser();
-    setCurrentUser(user);
-  }, []);
 
   const handleUpgradeClick = async (priceId: string) => {
     setError(null);

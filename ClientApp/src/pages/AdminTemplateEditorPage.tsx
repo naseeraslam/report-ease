@@ -84,7 +84,7 @@ const AdminTemplateEditorPage: React.FC = () => {
           <Editor
             apiKey="no-api-key" // Replace with your TinyMCE API key
             value={content}
-            onEditorChange={(newContent) => setContent(newContent)}
+            onEditorChange={(newContent: string) => setContent(newContent)}
             init={{
               height: 500,
               menubar: false,
