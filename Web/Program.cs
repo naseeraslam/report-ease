@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add services to the container.
 
-// Add HttpContextAccessor
+// Add HttpContextAccessor, which is required for the new authorization handler
 builder.Services.AddHttpContextAccessor();
 
 // Configure DbContext
@@ -60,7 +60,7 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
-// Add custom authorization handler
+// Add custom authorization handler as a Singleton (now safe)
 builder.Services.AddSingleton<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
 
 builder.Services.AddAuthorization(options =>
