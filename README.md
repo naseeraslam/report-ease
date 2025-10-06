@@ -6,7 +6,7 @@ Welcome to the FIR Report Editor! This is a full-stack web application designed 
 
 ## 🚀 Easiest Method: Run with Docker
 
-This is the simplest "one-click" way to get the entire application running as a web service. All you need is **Docker Desktop** installed on your computer.
+This is the simplest "one-click" way to get the entire application running. All you need is **Docker Desktop** installed on your computer.
 
 ### Step 1: Configure Your Keys
 
@@ -43,7 +43,9 @@ Before you start, you need to provide a few secret keys.
     docker-compose up --build
     ```
 3.  Wait for the build process to complete.
-4.  Once it's done, open your web browser and go to: **http://localhost**
+4.  Once it's done, open your web browser and go to: **http://localhost:8000**
+
+That's it! The entire application is now running.
 
 ---
 
@@ -118,4 +120,4 @@ If you are a developer and prefer not to use Docker, you can run the project dir
     ```bash
     npm run dev
     ```
-5.  Open your browser to the URL provided in the terminal (usually `http://localhost:5173`).
+5.  Open your browser to the URL provided in the terminal (usually `http://localhost:5173`). The backend will be available to the frontend automatically.
