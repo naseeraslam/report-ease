@@ -1,12 +1,12 @@
 # FIR Report Editor
 
-Welcome to the FIR Report Editor! This is a full-stack web application designed to help users create, manage, and export First Information Report (FIR) documents in both English and Urdu.
+Welcome to the FIR Report Editor! This is a full-stack web application designed to help users create, manage, and export First Information Report (FIR) documents in both English and Urdu. It can be run as a standard web application or built into a self-contained desktop application for Windows.
 
 ---
 
 ## 🚀 Easiest Method: Run with Docker
 
-This is the simplest "one-click" way to get the entire application running. All you need is **Docker Desktop** installed on your computer.
+This is the simplest "one-click" way to get the entire application running as a web service. All you need is **Docker Desktop** installed on your computer.
 
 ### Step 1: Configure Your Keys
 
@@ -45,55 +45,77 @@ Before you start, you need to provide a few secret keys.
 3.  Wait for the build process to complete.
 4.  Once it's done, open your web browser and go to: **http://localhost**
 
-That's it! The entire application is now running.
-
 ---
 
-## 💻 Manual Setup on a Windows Laptop
+## 🖥️ Building the Desktop Application for Windows
 
-If you prefer not to use Docker, you can run the project directly on Windows.
+Follow these steps to package the entire application into a single `.exe` installer that you can share and install on other Windows machines.
 
-### Step 1: Install the Necessary Tools
+### Step 1: Prerequisites
 
-You need to download and install two things. Just run the installer for each one and follow the on-screen prompts.
+- You must have the tools from the "Manual Setup" guide installed: **.NET 8 SDK** and **Node.js**.
 
-1.  **.NET 8 SDK for Windows:**
-    *   Download from the official Microsoft website: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0) (Use the "x64" installer for most Windows laptops).
-2.  **Node.js (LTS) for Windows:**
-    *   Download from the official Node.js website: [https://nodejs.org/](https://nodejs.org/) (The "LTS" version is recommended).
+### Step 2: Build the Backend
 
-### Step 2: Configure Your Keys
+Before building the desktop app, you need to publish the final version of the backend.
 
-This is the same as the Docker setup. Follow the instructions in **Step 1 of the Docker guide** above to edit your `appsettings.json` file with your secret keys.
-
-### Step 3: Run the Backend (The "Server")
-
-1.  Open a terminal application on Windows (you can search for **PowerShell** or **Command Prompt** in the Start Menu).
-2.  In the terminal, navigate to the project's root folder.
-3.  Run the following command to start the backend:
+1.  Open a terminal (PowerShell or Command Prompt).
+2.  Navigate to the project's root directory.
+3.  Run the following command:
     ```bash
-    dotnet run --project Web
+    dotnet publish Web -c Release -o Web/bin/Release/net8.0/
     ```
-4.  This will start the backend server. You will see log messages in the terminal. **Leave this terminal open and running.**
 
-### Step 4: Run the Frontend (The "Website")
+### Step 3: Build the Installer
 
-1.  Open a **second, new** terminal window (leave the first one running).
-2.  In this new terminal, navigate to the `ClientApp` directory inside the project folder:
+1.  In the same terminal, navigate to the `ClientApp` directory:
     ```bash
     cd ClientApp
     ```
-3.  First, install all the necessary website packages by running:
+2.  Install all dependencies if you haven't already:
     ```bash
     npm install
     ```
-4.  After the installation finishes, start the frontend server:
+3.  Run the desktop build command:
+    ```bash
+    npm run electron:build
+    ```
+4.  This will create a `dist` folder inside the `ClientApp` directory. Inside, you will find the `.exe` installer for the FIR Report Editor. You can now copy this file to any other Windows machine and run it to install the application.
+
+---
+
+## 🔧 (For Developers) Manual Local Setup
+
+If you are a developer and prefer not to use Docker, you can run the project directly on Windows.
+
+### Prerequisites
+
+-   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+-   [Node.js and npm](https://nodejs.org/)
+
+### 1. Run the Backend
+
+1.  Make sure you have configured your `appsettings.json` file as described in the "Quick Start" section.
+2.  Open a terminal and navigate to the project's root directory.
+3.  Run the backend server:
+    ```bash
+    dotnet run --project Web
+    ```
+4.  Keep this terminal open.
+
+### 2. Run the Frontend
+
+1.  Open a **second, new** terminal window (leave the first one running).
+2.  In this new terminal, navigate to the `ClientApp` directory:
+    ```bash
+    cd ClientApp
+    ```
+3.  Install dependencies:
+    ```bash
+    npm install
+    ```
+4.  Start the frontend server:
     ```bash
     npm run dev
     ```
-5.  The terminal will show you a URL, which is usually `http://localhost:5173`.
-
-### Step 5: Use the Application
-
--   Open your web browser (like Chrome, Firefox, or Edge) and go to the URL from the previous step (e.g., `http://localhost:5173`).
--   You should now see the FIR Report Editor login page! You can register a new account and start using the application.
+5.  Open your browser to the URL provided in the terminal (usually `http://localhost:5173`).
