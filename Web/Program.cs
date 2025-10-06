@@ -15,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add services to the container.
 
+// Add HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
 // Configure DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -58,7 +61,7 @@ builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionReposito
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
 // Add custom authorization handler
-builder.Services.AddScoped<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
 
 builder.Services.AddAuthorization(options =>
 {
