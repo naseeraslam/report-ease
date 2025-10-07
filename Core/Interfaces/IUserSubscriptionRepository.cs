@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using Core.Entities;
 
 namespace Core.Interfaces
 {
     public interface IUserSubscriptionRepository : IRepository<UserSubscription>
     {
-        // Future subscription-specific methods can be added here
+        Task<UserSubscription> GetUserSubscriptionByUserIdAsync(string userId);
     }
 }

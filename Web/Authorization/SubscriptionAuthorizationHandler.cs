@@ -33,34 +33,40 @@ namespace Web.Authorization
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext == null)
             {
+                // No HttpContext available, e.g., in a background service.
+                // Decide if access should be denied or allowed by default.
+                // For this case, we'll deny access as we can't check the subscription.
                 return;
             }
 
             var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
+                // No user ID found in the token.
                 return;
             }
 
-            // Safely resolve scoped services from the HttpContext
-            var userManager = httpContext.RequestServices.GetRequiredService<UserManager<User>>();
-            var subscriptionRepository = httpContext.RequestServices.GetRequiredService<IUserSubscriptionRepository>();
-
-            var user = await userManager.FindByIdAsync(userId);
-            if (user != null && await userManager.IsInRoleAsync(user, "Admin"))
+            // Create a scope to resolve scoped services
+            using (var scope = httpContext.RequestServices.CreateScope())
             {
-                context.Succeed(requirement); // Admins bypass subscription checks
-                return;
-            }
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var subscriptionRepository = scope.ServiceProvider.GetRequiredService<IUserSubscriptionRepository>();
 
-            var subscriptions = await subscriptionRepository.ListAllAsync();
-            var userSubscription = subscriptions.FirstOrDefault(s => s.UserId == userId && s.IsActive);
-
-            if (userSubscription != null)
-            {
-                if (userSubscription.PlanType >= requirement.RequiredPlan)
+                var user = await userManager.FindByIdAsync(userId);
+                if (user != null && await userManager.IsInRoleAsync(user, "Admin"))
                 {
-                    context.Succeed(requirement);
+                    context.Succeed(requirement); // Admins bypass subscription checks
+                    return;
+                }
+
+                var userSubscription = await subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
+
+                if (userSubscription != null && userSubscription.IsActive)
+                {
+                    if (userSubscription.PlanType >= requirement.RequiredPlan)
+                    {
+                        context.Succeed(requirement);
+                    }
                 }
             }
         }
