@@ -46,7 +46,6 @@ namespace Web.Authorization
                 return;
             }
 
-            // Create a scope to resolve scoped services
             using (var scope = httpContext.RequestServices.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -55,7 +54,7 @@ namespace Web.Authorization
                 var user = await userManager.FindByIdAsync(userId);
                 if (user != null && await userManager.IsInRoleAsync(user, "Admin"))
                 {
-                    context.Succeed(requirement); // Admins bypass subscription checks
+                    context.Succeed(requirement);
                     return;
                 }
 
