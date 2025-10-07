@@ -42,25 +42,26 @@ namespace Web.Authorization
                 return;
             }
 
-            // Safely resolve scoped services from the HttpContext
-            var userManager = httpContext.RequestServices.GetRequiredService<UserManager<User>>();
-            var subscriptionRepository = httpContext.RequestServices.GetRequiredService<IUserSubscriptionRepository>();
-
-            var user = await userManager.FindByIdAsync(userId);
-            if (user != null && await userManager.IsInRoleAsync(user, "Admin"))
+            using (var scope = httpContext.RequestServices.CreateScope())
             {
-                context.Succeed(requirement); // Admins bypass subscription checks
-                return;
-            }
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var subscriptionRepository = scope.ServiceProvider.GetRequiredService<IUserSubscriptionRepository>();
 
-            var subscriptions = await subscriptionRepository.ListAllAsync();
-            var userSubscription = subscriptions.FirstOrDefault(s => s.UserId == userId && s.IsActive);
-
-            if (userSubscription != null)
-            {
-                if (userSubscription.PlanType >= requirement.RequiredPlan)
+                var user = await userManager.FindByIdAsync(userId);
+                if (user != null && await userManager.IsInRoleAsync(user, "Admin"))
                 {
                     context.Succeed(requirement);
+                    return;
+                }
+
+                var userSubscription = await subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
+
+                if (userSubscription != null && userSubscription.IsActive)
+                {
+                    if (userSubscription.PlanType >= requirement.RequiredPlan)
+                    {
+                        context.Succeed(requirement);
+                    }
                 }
             }
         }
