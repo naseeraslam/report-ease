@@ -33,16 +33,12 @@ namespace Web.Authorization
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext == null)
             {
-                // No HttpContext available, e.g., in a background service.
-                // Decide if access should be denied or allowed by default.
-                // For this case, we'll deny access as we can't check the subscription.
                 return;
             }
 
             var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
-                // No user ID found in the token.
                 return;
             }
 

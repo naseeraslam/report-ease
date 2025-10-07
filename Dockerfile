@@ -2,11 +2,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /source
 
-# Copy all source code at once, simplifying the build process
-COPY . .
+# Copy the solution and project files first to leverage Docker layer caching
+COPY *.sln .
+COPY Core/*.csproj ./Core/
+COPY Infrastructure/*.csproj ./Infrastructure/
+COPY Web/*.csproj ./Web/
 
 # Restore dependencies
 RUN dotnet restore
+
+# Copy the rest of the source code
+COPY . .
 
 # Publish the application
 WORKDIR /source/Web
