@@ -10,8 +10,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using Web.Authorization;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Fail fast on DI lifetime issues (validate scopes)
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
+});
 
 // 1. Add services to the container.
 
@@ -60,9 +70,13 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
-// Add custom authorization handler as a Singleton (now safe)
-builder.Services.AddSingleton<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
+// Safety: Remove any previous IAuthorizationHandler registrations (prevents old singleton registration)
+builder.Services.RemoveAll<IAuthorizationHandler>();
 
+// Register authorization handler as Scoped (correct lifetime)
+builder.Services.AddScoped<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
+
+// Authorization policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Subscriber", policy =>
