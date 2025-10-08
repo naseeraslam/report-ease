@@ -21,23 +21,17 @@ namespace Web.Controllers
         private readonly ITemplateRepository _templateRepository;
         private readonly UserManager<User> _userManager;
         private readonly IReportExportService _reportExportService;
-        private readonly IUserSubscriptionRepository _subscriptionRepository;
-        private readonly IConfiguration _config;
 
         public ReportsController(
             IReportRepository reportRepository,
             ITemplateRepository templateRepository,
             UserManager<User> userManager,
-            IReportExportService reportExportService,
-            IUserSubscriptionRepository subscriptionRepository,
-            IConfiguration config)
+            IReportExportService reportExportService)
         {
             _reportRepository = reportRepository;
             _templateRepository = templateRepository;
             _userManager = userManager;
             _reportExportService = reportExportService;
-            _subscriptionRepository = subscriptionRepository;
-            _config = config;
         }
 
         [HttpGet]
@@ -82,27 +76,12 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "Subscriber")]
         public async Task<ActionResult<ReportDto>> CreateReport(CreateUpdateReportDto reportDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
                 return Unauthorized("User ID could not be determined from token.");
-            }
-
-            // Enforce free tier limit only if the feature is enabled
-            if (_config.GetValue<bool>("Features:EnableSubscriptionChecks"))
-            {
-                var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
-                if (subscription != null && subscription.PlanType == PlanType.Free)
-                {
-                    var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
-                    if (userReports >= 3)
-                    {
-                        return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
-                    }
-                }
             }
 
             var report = new Report
@@ -114,31 +93,25 @@ namespace Web.Controllers
             };
 
             var createdReport = await _reportRepository.AddAsync(report);
-            return CreatedAtAction(nameof(GetReport), new { id = createdReport.Id }, createdReport);
+            var responseDto = new ReportDto
+            {
+                Id = createdReport.Id,
+                Title = createdReport.Title,
+                Content = createdReport.Content,
+                Language = createdReport.Language,
+                CreatedAt = createdReport.CreatedAt,
+                UpdatedAt = createdReport.UpdatedAt
+            };
+            return CreatedAtAction(nameof(GetReport), new { id = createdReport.Id }, responseDto);
         }
 
         [HttpPost("from-template")]
-        [Authorize(Policy = "Subscriber")]
         public async Task<ActionResult<ReportDto>> CreateReportFromTemplate(CreateReportFromTemplateDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
                 return Unauthorized("User ID could not be determined from token.");
-            }
-
-            // Enforce free tier limit only if the feature is enabled
-            if (_config.GetValue<bool>("Features:EnableSubscriptionChecks"))
-            {
-                var subscription = (await _subscriptionRepository.ListAllAsync()).FirstOrDefault(s => s.UserId == userId);
-                if (subscription != null && subscription.PlanType == PlanType.Free)
-                {
-                    var userReports = (await _reportRepository.ListAllAsync()).Count(r => r.UserId == userId);
-                    if (userReports >= 3)
-                    {
-                        return Forbid("Free plan limit of 3 reports reached. Please upgrade to create more.");
-                    }
-                }
             }
 
             var template = await _templateRepository.GetByIdAsync(dto.TemplateId);
@@ -157,7 +130,16 @@ namespace Web.Controllers
             };
 
             var createdReport = await _reportRepository.AddAsync(report);
-            return CreatedAtAction(nameof(GetReport), new { id = createdReport.Id }, createdReport);
+            var responseDto = new ReportDto
+            {
+                Id = createdReport.Id,
+                Title = createdReport.Title,
+                Content = createdReport.Content,
+                Language = createdReport.Language,
+                CreatedAt = createdReport.CreatedAt,
+                UpdatedAt = createdReport.UpdatedAt
+            };
+            return CreatedAtAction(nameof(GetReport), new { id = createdReport.Id }, responseDto);
         }
 
         [HttpPut("{id}")]
@@ -196,7 +178,6 @@ namespace Web.Controllers
         }
 
         [HttpGet("{id}/export/pdf")]
-        [Authorize(Policy = "Subscriber")]
         public async Task<IActionResult> ExportReportAsPdf(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -212,7 +193,6 @@ namespace Web.Controllers
         }
 
         [HttpGet("{id}/export/docx")]
-        [Authorize(Policy = "Subscriber")]
         public async Task<IActionResult> ExportReportAsDocx(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
