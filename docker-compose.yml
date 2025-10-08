@@ -11,7 +11,7 @@ services:
       # It's recommended to pass secrets via a .env file or other secure means
       # For simplicity, we assume appsettings.json is configured for local development
     volumes:
-      - fir_db_data:/app # Use a named volume to persist the database
+      - fir_db_data:/app/Data # Persist only the database
 
   frontend:
     build:

@@ -23,9 +23,9 @@ builder.Host.UseDefaultServiceProvider(options =>
     options.ValidateOnBuild = true;
 });
 
-// 1. Add services to the container.
+// 1. Add services to the container
 
-// Add HttpContextAccessor, which is required for the new authorization handler
+// Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
 // Configure DbContext
@@ -41,7 +41,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))
 {
-    throw new InvalidOperationException("JWT Key is not configured in appsettings.json.");
+    throw new InvalidOperationException("JWT Key is not configured in app settings.json.");
 }
 
 builder.Services.AddAuthentication(options =>
@@ -70,25 +70,29 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
-// Safety: Remove any previous IAuthorizationHandler registrations (prevents old singleton registration)
+// Remove any previous IAuthorizationHandler registrations
 builder.Services.RemoveAll<IAuthorizationHandler>();
-
-// Register authorization handler as Scoped (correct lifetime)
 builder.Services.AddScoped<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
 
 // Authorization policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Subscriber", policy =>
-        policy.Requirements.Add(new SubscriptionRequirement(PlanType.Monthly)));
+        policy.RequireClaim("SubscriptionActive", "true"));
 });
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Add controllers with **case-insensitive JSON binding**
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
+
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add the background service
+// Background service
 builder.Services.AddHostedService<Infrastructure.Services.SubscriptionStatusService>();
 
 var app = builder.Build();
@@ -96,7 +100,28 @@ var app = builder.Build();
 // Configure Stripe
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
-// 2. Configure the HTTP request pipeline.
+// Apply EF Core migrations automatically and seed database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate(); // Apply migrations
+
+        // Seed roles, users, etc.
+        var userManager = services.GetRequiredService<UserManager<User>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        await Infrastructure.Data.Seed.DbInitializer.SeedAsync(userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
+
+// 2. Configure HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -105,26 +130,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Enable authentication middleware
+app.UseAuthentication(); // Authentication middleware
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Seed the database
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var userManager = services.GetRequiredService<UserManager<User>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        await Infrastructure.Data.Seed.DbInitializer.SeedAsync(userManager, roleManager);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
-}
 
 app.Run();

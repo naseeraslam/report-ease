@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import reportService from '../services/reportService';
-import { ReportDto } from '../types/report.types';
+import { ReportDto, Language } from '../types/report.types';
 
 const ReportsListPage: React.FC = () => {
   const [reports, setReports] = useState<ReportDto[]>([]);
@@ -37,52 +37,64 @@ const ReportsListPage: React.FC = () => {
   };
 
   if (loading) return <p>Loading reports...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-red-500 mb-4">{error}</p>;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">My Reports</h1>
-        <Link
-          to="/reports/new"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Create New Report
-        </Link>
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">My Reports</h1>
+          <Link
+              to="/reports/new"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Create New Report
+          </Link>
+        </div>
+
+        {reports.length === 0 ? (
+            <p>No reports found. Click "Create New Report" to get started.</p>
+        ) : (
+            <div className="bg-white shadow-md rounded overflow-hidden">
+              <table className="min-w-full table-auto">
+                <thead className="bg-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left">Title</th>
+                  <th className="px-6 py-3 text-left">Language</th>
+                  <th className="px-6 py-3 text-left">Last Updated</th>
+                  <th className="px-6 py-3 text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody className="text-gray-700">
+                {reports.map(report => (
+                    <tr key={report.id} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-3">{report.title}</td>
+                      <td className="px-6 py-3">
+                        {report.language === Language.English ? 'English' : 'Urdu'}
+                      </td>
+                      <td className="px-6 py-3">
+                        {new Date(report.updatedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-3 text-center">
+                        <Link
+                            to={`/reports/edit/${report.id}`}
+                            className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                            onClick={() => handleDelete(report.id)}
+                            className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                ))}
+                </tbody>
+              </table>
+            </div>
+        )}
       </div>
-      <div className="bg-white shadow-md rounded my-6">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left">Title</th>
-              <th className="px-6 py-3 text-left">Language</th>
-              <th className="px-6 py-3 text-left">Last Updated</th>
-              <th className="px-6 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-700">
-            {reports.map((report) => (
-              <tr key={report.id} className="border-b">
-                <td className="px-6 py-3">{report.title}</td>
-                <td className="px-6 py-3">{report.language === 0 ? 'Urdu' : 'English'}</td>
-                <td className="px-6 py-3">{new Date(report.updatedAt).toLocaleDateString()}</td>
-                <td className="px-6 py-3 text-center">
-                  <Link to={`/reports/edit/${report.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(report.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
   );
 };
 

@@ -81,7 +81,7 @@ const ReportEditorPage: React.FC = () => {
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2">Content</label>
           <Editor
-            apiKey="no-api-key" // Replace with your TinyMCE API key
+            apiKey="myoemufv5noo1im6gw9yduo2p6tswualrytda4lo8yc2knax"
             value={content}
             onEditorChange={(newContent: string) => setContent(newContent)}
             init={{
