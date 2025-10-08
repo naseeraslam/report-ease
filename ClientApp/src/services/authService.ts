@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import { RegisterDto, LoginDto, UserDto } from '../types/auth.types';
 
 const API_URL = '/api/account/';
@@ -12,7 +13,17 @@ const login = (data: LoginDto): Promise<UserDto> => {
     .post<UserDto>(API_URL + 'login', data)
     .then((response) => {
       if (response.data.token) {
-        localStorage.setItem('user', JSON.stringify(response.data));
+        const decodedToken: { [key: string]: any } = jwtDecode(response.data.token);
+        const rolesClaim = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+        const roles = Array.isArray(rolesClaim) ? rolesClaim : [rolesClaim].filter(Boolean);
+
+        const userWithRoles: UserDto = {
+          ...response.data,
+          roles: roles,
+        };
+
+        localStorage.setItem('user', JSON.stringify(userWithRoles));
+        return userWithRoles;
       }
       return response.data;
     });

@@ -1,9 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Entities;
-using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,23 +21,25 @@ namespace Web.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _config;
-        private readonly IUserSubscriptionRepository _subscriptionRepository;
 
         public AccountController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IConfiguration config,
-            IUserSubscriptionRepository subscriptionRepository)
+            IConfiguration config)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
-            _subscriptionRepository = subscriptionRepository;
         }
 
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
+            if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
+            {
+                return BadRequest("This email address is already in use. Please try another.");
+            }
+
             var user = new User
             {
                 Email = registerDto.Email,
@@ -50,19 +53,6 @@ namespace Web.Controllers
                 return BadRequest(result.Errors);
             }
 
-            // Assign a free subscription by default
-            var freeSubscription = new UserSubscription
-            {
-                UserId = user.Id,
-                PlanType = PlanType.Free,
-                StartDate = DateTime.UtcNow,
-                ExpiryDate = null,
-                IsActive = true,
-                PaymentStatus = "N/A"
-            };
-
-            await _subscriptionRepository.AddAsync(freeSubscription);
-
             return new UserDto
             {
                 Email = user.Email,
@@ -74,7 +64,16 @@ namespace Web.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            User user;
+            try
+            {
+                 user = await _userManager.FindByEmailAsync(loginDto.Email);
+            }
+            catch (InvalidOperationException)
+            {
+                // This should not happen if emails are unique. Log this as a critical error.
+                return StatusCode(StatusCodes.Status500InternalServerError, "A critical database error occurred. Multiple users are registered with the same email.");
+            }
 
             if (user == null)
                 return Unauthorized("Invalid credentials.");
@@ -101,19 +100,10 @@ namespace Web.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? "")
             };
 
-            // 🔥 Add subscription claim
-            var subscription = (await _subscriptionRepository.ListAllAsync())
-                .FirstOrDefault(s => s.UserId == user.Id && s.IsActive);
-
-            if (subscription != null)
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
             {
-                claims.Add(new Claim("SubscriptionActive", "true"));
-                claims.Add(new Claim("PlanType", subscription.PlanType.ToString()));
-            }
-            else
-            {
-                claims.Add(new Claim("SubscriptionActive", "false"));
-                claims.Add(new Claim("PlanType", "Free"));
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
             var jwtKey = _config["Jwt:Key"];

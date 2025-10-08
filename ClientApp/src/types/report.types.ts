@@ -22,3 +22,7 @@ export interface CreateReportFromTemplateDto {
   templateId: number;
   title: string;
 }
+
+export interface CopyReportDto {
+  title: string;
+}

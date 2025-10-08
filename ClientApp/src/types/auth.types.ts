@@ -13,4 +13,5 @@ export interface UserDto {
   email: string;
   username: string;
   token: string;
+  roles: string[];
 }

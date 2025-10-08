@@ -12,7 +12,6 @@ namespace Infrastructure.Data
 
         public DbSet<Report> Reports { get; set; }
         public DbSet<Template> Templates { get; set; }
-        public DbSet<UserSubscription> UserSubscriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
