@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -32,6 +34,11 @@ namespace Web.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
+            if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
+            {
+                return BadRequest("This email address is already in use. Please try another.");
+            }
+
             var user = new User
             {
                 Email = registerDto.Email,
@@ -56,7 +63,16 @@ namespace Web.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            User user;
+            try
+            {
+                 user = await _userManager.FindByEmailAsync(loginDto.Email);
+            }
+            catch (InvalidOperationException)
+            {
+                // This should not happen if emails are unique. Log this as a critical error.
+                return StatusCode(StatusCodes.Status500InternalServerError, "A critical database error occurred. Multiple users are registered with the same email.");
+            }
 
             if (user == null)
                 return Unauthorized("Invalid credentials.");

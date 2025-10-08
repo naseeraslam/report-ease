@@ -177,6 +177,45 @@ namespace Web.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/copy")]
+        public async Task<ActionResult<ReportDto>> CopyReport(int id, CopyReportDto copyDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("User ID could not be determined from token.");
+            }
+
+            var originalReport = await _reportRepository.GetByIdAsync(id);
+
+            if (originalReport == null || originalReport.UserId != userId)
+            {
+                return NotFound("Original report not found or you don't have permission to access it.");
+            }
+
+            var newReport = new Report
+            {
+                Title = copyDto.Title,
+                Content = originalReport.Content,
+                Language = originalReport.Language,
+                UserId = userId
+            };
+
+            var createdReport = await _reportRepository.AddAsync(newReport);
+
+            var responseDto = new ReportDto
+            {
+                Id = createdReport.Id,
+                Title = createdReport.Title,
+                Content = createdReport.Content,
+                Language = createdReport.Language,
+                CreatedAt = createdReport.CreatedAt,
+                UpdatedAt = createdReport.UpdatedAt
+            };
+
+            return CreatedAtAction(nameof(GetReport), new { id = createdReport.Id }, responseDto);
+        }
+
         [HttpGet("{id}/export/pdf")]
         public async Task<IActionResult> ExportReportAsPdf(int id)
         {

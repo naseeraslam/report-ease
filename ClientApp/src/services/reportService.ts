@@ -1,5 +1,5 @@
 import api from './api';
-import { ReportDto, CreateUpdateReportDto, CreateReportFromTemplateDto } from '../types/report.types';
+import { ReportDto, CreateUpdateReportDto, CreateReportFromTemplateDto, CopyReportDto } from '../types/report.types';
 
 const getReports = (): Promise<ReportDto[]> => {
   return api.get('/reports').then(response => response.data);
@@ -33,6 +33,10 @@ const exportReportAsDocx = (id: number): Promise<Blob> => {
   return api.get(`/reports/${id}/export/docx`, { responseType: 'blob' }).then(response => response.data);
 };
 
+const copyReport = (id: number, data: CopyReportDto): Promise<ReportDto> => {
+  return api.post(`/reports/${id}/copy`, data).then(response => response.data);
+};
+
 const reportService = {
   getReports,
   getReport,
@@ -42,6 +46,7 @@ const reportService = {
   deleteReport,
   exportReportAsPdf,
   exportReportAsDocx,
+  copyReport,
 };
 
 export default reportService;
