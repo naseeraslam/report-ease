@@ -8,9 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using Stripe;
-using Web.Authorization;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -67,19 +64,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
-builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportExportService, Infrastructure.Services.ReportExportService>();
 
-// Remove any previous IAuthorizationHandler registrations
-builder.Services.RemoveAll<IAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, SubscriptionAuthorizationHandler>();
-
 // Authorization policies
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Subscriber", policy =>
-        policy.RequireClaim("SubscriptionActive", "true"));
-});
+builder.Services.AddAuthorization();
 
 // Add controllers with **case-insensitive JSON binding**
 builder.Services.AddControllers()
@@ -92,13 +80,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Background service
-builder.Services.AddHostedService<Infrastructure.Services.SubscriptionStatusService>();
-
 var app = builder.Build();
-
-// Configure Stripe
-Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // Apply EF Core migrations automatically and seed database
 using (var scope = app.Services.CreateScope())
