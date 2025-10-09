@@ -10,15 +10,63 @@
 @tailwind utilities;
 
 @layer base {
+    :root {
+        --color-primary: #3B82F6; /* Blue-500 */
+        --color-primary-hover: #2563EB; /* Blue-600 */
+        --color-secondary: #6B7280; /* Gray-500 */
+        --color-secondary-hover: #4B5563; /* Gray-600 */
+        --color-text: #1F2937; /* Gray-800 */
+        --color-background: #F9FAFB; /* Gray-50 */
+        --color-surface: #FFFFFF; /* White */
+        --color-border: #E5E7EB; /* Gray-200 */
+    }
+
     body {
         font-family: 'Inter', sans-serif;
-        @apply bg-background text-text;
+        background-color: var(--color-background);
+        color: var(--color-text);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+
+    /* Redefine 'primary' and 'primary-dark' for tailwind config if needed */
+    .bg-primary {
+        background-color: var(--color-primary);
+    }
+    .hover\:bg-primary-dark:hover {
+        background-color: var(--color-primary-hover);
+    }
+    .text-primary {
+        color: var(--color-primary);
+    }
+    .hover\:text-primary-dark:hover {
+        color: var(--color-primary-hover);
+    }
+    .focus\:ring-primary:focus {
+        --tw-ring-color: var(--color-primary);
+    }
+    .focus\:border-primary:focus {
+        --tw-border-opacity: 1;
+        border-color: var(--color-primary);
+    }
+    .text-text-light {
+        color: var(--color-text-light);
+    }
 }
 
-@layer utilities {
+@layer components {
+    .btn {
+        @apply font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+    .btn-primary {
+        @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
+    }
+    .btn-secondary {
+        @apply btn bg-secondary text-white hover:bg-secondary-hover focus:ring-secondary;
+    }
+    .input-field {
+        @apply w-full px-4 py-2 border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary;
+    }
     .font-urdu {
         font-family: 'jameel-noori-nastaleeq', sans-serif;
     }
