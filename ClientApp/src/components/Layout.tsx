@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import { FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 
 const Layout: React.FC = () => {
     const navigate = useNavigate();

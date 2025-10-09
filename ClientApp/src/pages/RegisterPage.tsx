@@ -56,7 +56,7 @@ const RegisterPage: React.FC = () => {
               className="w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-lg focus:ring-primary focus:border-primary"
               placeholder="Username"
               value={username}
-              onChange={(e) => setUsername(e.targe.value)}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
