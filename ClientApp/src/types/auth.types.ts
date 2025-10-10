@@ -15,3 +15,10 @@ export interface UserDto {
   token: string;
   roles: string[];
 }
+
+export interface UserListDto {
+  id: string;
+  userName: string;
+  email: string;
+  roles: string[];
+}

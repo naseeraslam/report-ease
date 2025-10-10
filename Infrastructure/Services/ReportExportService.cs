@@ -19,13 +19,13 @@ namespace Infrastructure.Services
         {
             // It's important to resolve the path relative to the content root
             var contentRoot = hostEnvironment.ContentRootPath;
-            _fontPath = Path.Combine(contentRoot, "Fonts", "Jameel Noori Nastaleeq.ttf");
+            _fontPath = Path.Combine(contentRoot, "Fonts", "Jameel_Noori_Nastaleeq.ttf");
         }
         public Task<byte[]> GeneratePdfAsync(Report report)
         {
             try
             {
-                var isUrdu = report.Language.Equals("urdu", StringComparison.OrdinalIgnoreCase);
+                var isUrdu = report.Language == Language.Urdu;
                 string fontFaceCss = "";
                 string bodyStyle = "";
 
