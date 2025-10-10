@@ -9,7 +9,6 @@ import ReportEditorPage from './pages/ReportEditorPage';
 import AdminTemplatesPage from './pages/AdminTemplatesPage';
 import AdminTemplateEditorPage from './pages/AdminTemplateEditorPage';
 import AdminRoute from './components/AdminRoute';
-import AccountPage from './pages/AccountPage';
 
 function App() {
   return (
@@ -25,7 +24,7 @@ function App() {
             <Route path="/reports" element={<ReportsListPage />} />
             <Route path="/reports/new" element={<ReportEditorPage />} />
             <Route path="/reports/edit/:id" element={<ReportEditorPage />} />
-            <Route path="/account" element={<AccountPage />} />
+            {/*<Route path="/account" element={<AccountPage />} />*/}
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>

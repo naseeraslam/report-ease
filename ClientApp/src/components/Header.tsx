@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import { FiLogIn, FiLogOut, FiUserPlus, FiGrid, FiFileText, FiUser, FiSettings } from 'react-icons/fi';
+import { FiLogIn, FiLogOut, FiUserPlus, FiGrid, FiFileText, FiSettings } from 'react-icons/fi';
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
@@ -36,7 +36,7 @@ const Header: React.FC = () => {
                                 {isAdmin && (
                                     <NavLink to="/admin/templates" icon={FiSettings}>Admin</NavLink>
                                 )}
-                                <NavLink to="/account" icon={FiUser}>Account</NavLink>
+                                {/*<NavLink to="/account" icon={FiUser}>Account</NavLink>*/}
                                 <button
                                     onClick={handleLogout}
                                     className="btn-secondary btn flex items-center"
