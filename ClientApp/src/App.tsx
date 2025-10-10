@@ -9,6 +9,10 @@ import ReportEditorPage from './pages/ReportEditorPage';
 import AdminTemplatesPage from './pages/AdminTemplatesPage';
 import AdminTemplateEditorPage from './pages/AdminTemplateEditorPage';
 import AdminRoute from './components/AdminRoute';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AccountPage from './pages/AccountPage';
+import UpdatePasswordPage from './pages/UpdatePasswordPage';
+import UserManagementPage from './pages/UserManagementPage';
 
 function App() {
   return (
@@ -24,10 +28,14 @@ function App() {
             <Route path="/reports" element={<ReportsListPage />} />
             <Route path="/reports/new" element={<ReportEditorPage />} />
             <Route path="/reports/edit/:id" element={<ReportEditorPage />} />
-            {/*<Route path="/account" element={<AccountPage />} />*/}
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/update-password" element={<UpdatePasswordPage />} />
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<Navigate to="/admin/dashboard" />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/users" element={<UserManagementPage />} />
               <Route path="/admin/templates" element={<AdminTemplatesPage />} />
               <Route path="/admin/templates/new" element={<AdminTemplateEditorPage />} />
               <Route path="/admin/templates/edit/:id" element={<AdminTemplateEditorPage />} />

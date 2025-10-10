@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -88,6 +89,32 @@ namespace Web.Controllers
                 Username = user.UserName!,
                 Token = await GenerateJwtToken(user)
             };
+        }
+
+        [HttpPost("update-password")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePassword(UpdatePasswordDto updatePasswordDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, updatePasswordDto.OldPassword, updatePasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok("Password updated successfully.");
         }
 
         private async Task<string> GenerateJwtToken(User user)

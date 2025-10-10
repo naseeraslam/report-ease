@@ -41,11 +41,28 @@ const getCurrentUser = (): UserDto | null => {
   return null;
 };
 
+const updatePassword = (oldPassword: string, newPassword: string) => {
+  const user = getCurrentUser();
+  if (!user || !user.token) {
+    return Promise.reject("No user token found");
+  }
+
+  return axios.post(API_URL + 'update-password', {
+    oldPassword,
+    newPassword
+  }, {
+    headers: {
+      'Authorization': `Bearer ${user.token}`
+    }
+  });
+};
+
 const authService = {
   register,
   login,
   logout,
   getCurrentUser,
+  updatePassword,
 };
 
 export default authService;

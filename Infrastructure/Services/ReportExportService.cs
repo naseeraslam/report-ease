@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Core.Entities;
@@ -5,37 +6,95 @@ using Core.Interfaces;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Hosting;
 using SelectPdf;
 
 namespace Infrastructure.Services
 {
     public class ReportExportService : IReportExportService
     {
+        private readonly string _fontPath;
+
+        public ReportExportService(IHostEnvironment hostEnvironment)
+        {
+            // It's important to resolve the path relative to the content root
+            var contentRoot = hostEnvironment.ContentRootPath;
+            _fontPath = Path.Combine(contentRoot, "Fonts", "Jameel Noori Nastaleeq.ttf");
+        }
         public Task<byte[]> GeneratePdfAsync(Report report)
         {
-            // Create a new PDF document
-            PdfDocument doc = new PdfDocument();
+            try
+            {
+                var isUrdu = report.Language.Equals("urdu", StringComparison.OrdinalIgnoreCase);
+                string fontFaceCss = "";
+                string bodyStyle = "";
 
-            // Add a new page to the document
-            PdfPage page = doc.AddPage();
+                if (isUrdu)
+                {
+                    if (File.Exists(_fontPath))
+                    {
+                        // Convert font to Base64 to embed it in the CSS
+                        string fontBase64 = Convert.ToBase64String(File.ReadAllBytes(_fontPath));
+                        fontFaceCss = @"
+                            @font-face {
+                                font-family: 'Jameel Noori Nastaleeq';
+                                src: url(data:font/ttf;base64," + fontBase64 + @") format('truetype');
+                            }";
+                        bodyStyle = "font-family: 'Jameel Noori Nastaleeq'; direction: rtl;";
+                    }
+                    else
+                    {
+                        // Fallback or log if font is not found
+                        Console.WriteLine("Jameel Noori Nastaleeq font not found at path: " + _fontPath);
+                        bodyStyle = "direction: rtl;"; // Still apply RTL for Urdu
+                    }
+                }
 
-            // Create a new HTML to PDF converter
-            HtmlToPdf converter = new HtmlToPdf();
+                // Create a new HTML to PDF converter
+                HtmlToPdf converter = new HtmlToPdf();
+                converter.Options.PdfPageSize = PdfPageSize.A4;
+                converter.Options.MarginTop = 20;
+                converter.Options.MarginBottom = 20;
 
-            // It's a good practice to wrap the content in a basic HTML structure
-            string htmlContent = $"<html><body><h1>{report.Title}</h1><div>{report.Content}</div></body></html>";
+                // Construct the HTML content with embedded styles
+                string htmlContent = $@"
+                    <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <style>
+                                {fontFaceCss}
+                                body {{
+                                    {bodyStyle}
+                                }}
+                                .content {{
+                                    white-space: pre-wrap; /* Preserve whitespace and newlines */
+                                }}
+                            </style>
+                        </head>
+                        <body>
+                            <h1>{report.Title}</h1>
+                            <div class='content'>{report.Content}</div>
+                        </body>
+                    </html>";
 
-            // Convert the HTML string to a PDF document
-            PdfDocument pdf = converter.ConvertHtmlString(htmlContent);
+                // Convert the HTML string to a PDF document
+                PdfDocument pdf = converter.ConvertHtmlString(htmlContent);
 
-            // Save the PDF to a memory stream
-            MemoryStream ms = new MemoryStream();
-            pdf.Save(ms);
-            byte[] pdfBytes = ms.ToArray();
-            ms.Close();
-            pdf.Close();
-
-            return Task.FromResult(pdfBytes);
+                // Save the PDF to a memory stream
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    pdf.Save(ms);
+                    pdf.Close(); // Close the document before returning the bytes
+                    return Task.FromResult(ms.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"An error occurred during PDF generation: {ex.Message}");
+                // Return an empty PDF or throw a custom exception
+                return Task.FromResult(Array.Empty<byte>());
+            }
         }
 
         public Task<byte[]> GenerateDocxAsync(Report report)
